@@ -234,6 +234,36 @@ var Modules = Modules || {};
      */
     var registeredModules = new CommonUtils.Map();
 
+    var Module = function(name, mod) {
+        var obj = {};
+        obj.module = mod;
+        obj.moduleIdentifier = name;
+        var parts = name.split(':');
+        if (parts.length > 1) {
+            obj.moduleName = parts[0];
+        } else {
+            obj.moduleName = name;
+        }
+        if (parts.length > 1) {
+            obj.moduleVersion = parts[1];
+        } else {
+            obj.moduleVersion = 'default';
+        }
+        obj.getModule =  function() {
+            return obj.module;
+        };
+        obj.setupModule = function() {
+            if (obj.module.hasOwnProperty('setupModule')) obj.module.setupModule();
+        };
+        obj.moduleReady = function() {
+            if (obj.module.hasOwnProperty('moduleReady')) this.module.moduleReady();
+        };
+        obj.messageReceived = function(msg) {
+            if (obj.module.hasOwnProperty('messageReceived')) obj.module.messageReceived(msg);
+        };
+        return obj;
+    };
+
     /**
      * Create a new module for identifier or get the existing one.
      * Add some functions and members to the module :
@@ -274,7 +304,7 @@ var Modules = Modules || {};
      * @return {*} the module
      */
     var createModuleFrom = function(mod, name) {
-        if (!mod.hasOwnProperty('moduleIdentifier')) mod.moduleIdentifier = name;
+        /**if (!mod.hasOwnProperty('moduleIdentifier')) mod.moduleIdentifier = name;
         var parts = name.split(':');
         if (parts.length > 1) {
             if (!mod.hasOwnProperty('moduleName')) mod.moduleName = parts[0];
@@ -289,7 +319,8 @@ var Modules = Modules || {};
         if (!mod.hasOwnProperty('setupModule')) mod.setupModule = function() {};
         if (!mod.hasOwnProperty('moduleReady')) mod.moduleReady = function() {};
         if (!mod.hasOwnProperty('messageReceived')) mod.messageReceived = function(msg) {};
-        return mod;
+        return mod;  **/
+        return new Module(name, mod);
     };
 
     /************************ public API **************************************************/
@@ -304,7 +335,7 @@ var Modules = Modules || {};
         if (!registeredModules.containsKey(name)) {
             throw ("Module '" + name + "' doesn't exists.");
         }
-        return registeredModules.get(name);
+        return registeredModules.get(name).getModule();
     };
 
     /**
@@ -319,9 +350,9 @@ var Modules = Modules || {};
            throw ("Module '" + namespace + "' doesn't exists.");
        }
        if (callback == undefined) {
-           return getOrCreateModule(namespace);
+           return getOrCreateModule(namespace).getModule();
        }
-       return callback(getOrCreateModule(namespace));
+       return callback(getOrCreateModule(namespace).getModule());
     };
 
     /**
@@ -337,7 +368,7 @@ var Modules = Modules || {};
             if (!registeredModules.containsKey(item)) {
                 throw ("Module '" + item + "' doesn't exists.");
             }
-            dependencies[idx] = getOrCreateModule(item);
+            dependencies[idx] = getOrCreateModule(item).getModule();
         });
         return callback.apply(null, dependencies);
     };
@@ -353,7 +384,7 @@ var Modules = Modules || {};
         if (registeredModules.containsKey(namespace)) {
             throw ("Module '" + namespace + "' already exists.");
         }
-        var mod = getOrCreateModule(namespace);
+        var mod = getOrCreateModule(namespace).getModule();
         callback(mod);
         return mod;
     };
@@ -387,13 +418,13 @@ var Modules = Modules || {};
             throw ("Module '" + namespace + "' already exists.");
         }
         var dependencies = [];
-        var mod = getOrCreateModule(namespace);
+        var mod = getOrCreateModule(namespace).getModule();
         dependencies[0] = mod;
         deps.forEach(function(item, idx, array) {
             if (!registeredModules.containsKey(item)) {
                 throw ("Module '" + item + "' doesn't exists.");
             }
-            dependencies[idx + 1] = getOrCreateModule(item);
+            dependencies[idx + 1] = getOrCreateModule(item).getModule();
         });
         callback.apply(null, dependencies);
         return mod;
@@ -416,7 +447,7 @@ var Modules = Modules || {};
             if (!registeredModules.containsKey(item)) {
                 throw ("Module '" + item + "' doesn't exists.");
             }
-            dependencies[idx] = getOrCreateModule(item);
+            dependencies[idx] = getOrCreateModule(item).getModule();
         });
         var mod = createModuleFrom(callback.apply(null, dependencies), namespace);
         registerModuleIfNotExists(namespace, mod);

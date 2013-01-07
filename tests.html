@@ -29,7 +29,7 @@
         });
 
         var ModuleA = Modules.get('ModuleA');
-        equal( ModuleA.moduleIdentifier, 'ModuleA', "Identifier for ModuleA doesn't exists");
+        ok( typeof ModuleA.hello === 'function', "Identifier for ModuleA doesn't exists");
 
         Modules.define('ModuleA:1.0', function() {
             return {
@@ -46,8 +46,8 @@
         });
 
         var ModuleA1 = Modules.get('ModuleA:1.0');
-        equal( ModuleA1.moduleIdentifier, 'ModuleA:1.0', "Identifier for ModuleA:1.0 doesn't exists");
-        equal( ModuleA1.moduleVersion, '1.0', "Version for ModuleA:1.0 doesn't exists");
+        ok( typeof ModuleA1.hello === 'function', "Identifier for ModuleA:1.0 doesn't exists");
+        ok( typeof ModuleA1.hello === 'function', "Version for ModuleA:1.0 doesn't exists");
 
         Modules.define('ModuleA:2.0', function() {
             return {
@@ -64,8 +64,8 @@
         });
 
         var ModuleA2 = Modules.get('ModuleA:2.0');
-        equal( ModuleA2.moduleIdentifier, 'ModuleA:2.0', "Identifier for ModuleA:2.0 doesn't exists");
-        equal( ModuleA2.moduleVersion, '2.0', "Version for ModuleA:2.0 doesn't exists");
+        ok( typeof ModuleA2.hello === 'function', "Identifier for ModuleA:2.0 doesn't exists");
+        ok( typeof ModuleA2.hello === 'function', "Version for ModuleA:2.0 doesn't exists");
 
         Modules.create('ModuleB', function(ModuleB) {
             ModuleB.hello = function() {
@@ -80,7 +80,7 @@
         });
 
         var ModuleB = Modules.get('ModuleB');
-        equal( ModuleB.moduleIdentifier, 'ModuleB', "Identifier for ModuleB doesn't exists");
+        ok( typeof ModuleB.hello === 'function', "Identifier for ModuleB doesn't exists");
     });
 
     test( "Test Modules create / define with dependencies", function() {
@@ -96,7 +96,7 @@
         });
 
         var ModuleC = Modules.get('ModuleC');
-        equal( ModuleC.moduleIdentifier, 'ModuleC', "Identifier for ModuleC doesn't exists");
+        ok( typeof ModuleC.hello === 'function', "Identifier for ModuleC doesn't exists");
 
         Modules.defineWithDependencies('ModuleD', ['ModuleC', 'get'], function(ModuleC, get) {
             return {
@@ -112,7 +112,7 @@
         });
 
         var ModuleD = Modules.get('ModuleD');
-        equal( ModuleD.moduleIdentifier, 'ModuleD', "Identifier for ModuleD doesn't exists");
+        ok( typeof ModuleD.hello === 'function', "Identifier for ModuleD doesn't exists");
     });
 
     $(document).ready(function() {
@@ -210,7 +210,7 @@
                 };
             });
             var moda = Modules.get('A');
-            equal( moda.moduleIdentifier, 'A', "Identifier for A doesn't exists");
+            ok( typeof moda.hello === 'function', "Identifier for A doesn't exists");
 
             define('B', ['A'], function(A) {
                 return {
@@ -218,7 +218,9 @@
                 };
             });
             var modb = Modules.get('B');
-            equal( modb.moduleIdentifier, 'B', "Identifier for B doesn't exists");
+            ok( typeof modb.hello === 'function', "Identifier for B doesn't exists");
+
+            messages = [];
 
             require(['A'], function(A) {
                 A.hello();
