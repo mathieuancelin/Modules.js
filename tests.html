@@ -204,7 +204,7 @@
 
         test( "Test AMD", function() {
             messages = [];
-            define('A', [], function() {
+            define('A', function() {
                 return {
                     hello: function() { messages.push('Hello'); }
                 };
