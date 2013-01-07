@@ -15,107 +15,107 @@
 
     var messages = [];
 
+    test( "Test Modules create / define", function() {
+        Modules.create('ModuleA', function(ModuleA) {
+            ModuleA.hello = function() {
+                messages.push("Hello from module A");
+            };
+            ModuleA.setupModule = function() {
+                messages.push("Setup ModuleA");
+            };
+            ModuleA.messageReceived = function(msg) {
+                messages.push("Received in ModuleA " + msg);
+            };
+        });
+
+        var ModuleA = Modules.get('ModuleA');
+        equal( ModuleA.moduleIdentifier, 'ModuleA', "Identifier for ModuleA doesn't exists");
+
+        Modules.define('ModuleA:1.0', function() {
+            return {
+                hello: function() {
+                    messages.push("Hello from module A v 1.0");
+                },
+                setupModule: function() {
+                    messages.push("Setup ModuleA v 1.0");
+                },
+                messageReceived: function(msg) {
+                    messages.push("Received in ModuleA v 1.0 " + msg);
+                }
+            };
+        });
+
+        var ModuleA1 = Modules.get('ModuleA:1.0');
+        equal( ModuleA1.moduleIdentifier, 'ModuleA:1.0', "Identifier for ModuleA:1.0 doesn't exists");
+        equal( ModuleA1.moduleVersion, '1.0', "Version for ModuleA:1.0 doesn't exists");
+
+        Modules.define('ModuleA:2.0', function() {
+            return {
+                hello: function() {
+                    messages.push("Hello from module A v 2.0");
+                },
+                setupModule: function() {
+                    messages.push("Setup ModuleA v 2.0");
+                },
+                messageReceived: function(msg) {
+                    messages.push("Received in ModuleA v 2.0 " + msg);
+                }
+            };
+        });
+
+        var ModuleA2 = Modules.get('ModuleA:2.0');
+        equal( ModuleA2.moduleIdentifier, 'ModuleA:2.0', "Identifier for ModuleA:2.0 doesn't exists");
+        equal( ModuleA2.moduleVersion, '2.0', "Version for ModuleA:2.0 doesn't exists");
+
+        Modules.create('ModuleB', function(ModuleB) {
+            ModuleB.hello = function() {
+                messages.push("Hello from module B");
+            };
+            ModuleB.moduleReady = function() {
+                messages.push("ModuleB is ready !!!");
+            };
+            ModuleB.messageReceived = function(msg) {
+                messages.push("Received in ModuleB " + msg);
+            };
+        });
+
+        var ModuleB = Modules.get('ModuleB');
+        equal( ModuleB.moduleIdentifier, 'ModuleB', "Identifier for ModuleB doesn't exists");
+    });
+
+    test( "Test Modules create / define with dependencies", function() {
+        Modules.createWithDependencies('ModuleC', ['ModuleA', 'ModuleB'], function(ModuleC, ModuleA, ModuleB) {
+            ModuleC.hello = function() {
+                ModuleA.hello();
+                ModuleB.hello();
+                messages.push("Hello from module C");
+            };
+            ModuleC.messageReceived = function(msg) {
+                messages.push("Received in ModuleC " + msg);
+            };
+        });
+
+        var ModuleC = Modules.get('ModuleC');
+        equal( ModuleC.moduleIdentifier, 'ModuleC', "Identifier for ModuleC doesn't exists");
+
+        Modules.defineWithDependencies('ModuleD', ['ModuleC', 'get'], function(ModuleC, get) {
+            return {
+                hello: function() {
+                    ModuleC.hello();
+                    messages.push("Hello from module D");
+                },
+                messageReceived: function(msg) {
+                    messages.push("Received in ModuleD " + msg);
+                    get('ModuleA').hello();
+                }
+            };
+        });
+
+        var ModuleD = Modules.get('ModuleD');
+        equal( ModuleD.moduleIdentifier, 'ModuleD', "Identifier for ModuleD doesn't exists");
+    });
+
     $(document).ready(function() {
-
-        test( "Test Modules create / define", function() {
-            Modules.create('ModuleA', function(ModuleA) {
-                ModuleA.hello = function() {
-                    messages.push("Hello from module A");
-                };
-                ModuleA.setupModule = function() {
-                    messages.push("Setup ModuleA");
-                };
-                ModuleA.messageReceived = function(msg) {
-                    messages.push("Received in ModuleA " + msg);
-                };
-            });
-
-            var ModuleA = Modules.get('ModuleA');
-            equal( ModuleA.moduleIdentifier, 'ModuleA', "Identifier for ModuleA doesn't exists");
-
-            Modules.define('ModuleA:1.0', function() {
-                return {
-                    hello: function() {
-                        messages.push("Hello from module A v 1.0");
-                    },
-                    setupModule: function() {
-                        messages.push("Setup ModuleA v 1.0");
-                    },
-                    messageReceived: function(msg) {
-                        messages.push("Received in ModuleA v 1.0 " + msg);
-                    }
-                };
-            });
-
-            var ModuleA1 = Modules.get('ModuleA:1.0');
-            equal( ModuleA1.moduleIdentifier, 'ModuleA:1.0', "Identifier for ModuleA:1.0 doesn't exists");
-            equal( ModuleA1.moduleVersion, '1.0', "Version for ModuleA:1.0 doesn't exists");
-
-            Modules.define('ModuleA:2.0', function() {
-                return {
-                    hello: function() {
-                        messages.push("Hello from module A v 2.0");
-                    },
-                    setupModule: function() {
-                        messages.push("Setup ModuleA v 2.0");
-                    },
-                    messageReceived: function(msg) {
-                        messages.push("Received in ModuleA v 2.0 " + msg);
-                    }
-                };
-            });
-
-            var ModuleA2 = Modules.get('ModuleA:2.0');
-            equal( ModuleA2.moduleIdentifier, 'ModuleA:2.0', "Identifier for ModuleA:2.0 doesn't exists");
-            equal( ModuleA2.moduleVersion, '2.0', "Version for ModuleA:2.0 doesn't exists");
-
-            Modules.create('ModuleB', function(ModuleB) {
-                ModuleB.hello = function() {
-                    messages.push("Hello from module B");
-                };
-                ModuleB.moduleReady = function() {
-                    messages.push("ModuleB is ready !!!");
-                };
-                ModuleB.messageReceived = function(msg) {
-                    messages.push("Received in ModuleB " + msg);
-                };
-            });
-
-            var ModuleB = Modules.get('ModuleB');
-            equal( ModuleB.moduleIdentifier, 'ModuleB', "Identifier for ModuleB doesn't exists");
-        });
-
-        test( "Test Modules create / define with dependencies", function() {
-            Modules.createWithDependencies('ModuleC', ['ModuleA', 'ModuleB'], function(ModuleC, ModuleA, ModuleB) {
-                ModuleC.hello = function() {
-                    ModuleA.hello();
-                    ModuleB.hello();
-                    messages.push("Hello from module C");
-                };
-                ModuleC.messageReceived = function(msg) {
-                    messages.push("Received in ModuleC " + msg);
-                };
-            });
-
-            var ModuleC = Modules.get('ModuleC');
-            equal( ModuleC.moduleIdentifier, 'ModuleC', "Identifier for ModuleC doesn't exists");
-
-            Modules.defineWithDependencies('ModuleD', ['ModuleC', 'get'], function(ModuleC, get) {
-                return {
-                    hello: function() {
-                        ModuleC.hello();
-                        messages.push("Hello from module D");
-                    },
-                    messageReceived: function(msg) {
-                        messages.push("Received in ModuleD " + msg);
-                        get('ModuleA').hello();
-                    }
-                };
-            });
-
-            var ModuleD = Modules.get('ModuleD');
-            equal( ModuleD.moduleIdentifier, 'ModuleD', "Identifier for ModuleD doesn't exists");
-        });
 
         test( "Test before Modules Setup then Ready", function() {
             equal( messages.length, 0, "0 message should have been pushed during init phase ..." );
@@ -191,7 +191,7 @@
             messages = [];
         });
 
-        test( "Others modules", function() {
+        test( "Test other modules", function() {
             var others = 0;
             Modules.use('jquery', function(jq) {
                 if (jq !== 'undefined')  others++;
@@ -200,6 +200,36 @@
                 if (jq !== 'undefined')  others++;
             });
             equal( others, 2, "2 others modules should have been registered" );
+        });
+
+        test( "Test AMD", function() {
+            messages = [];
+            define('A', [], function() {
+                return {
+                    hello: function() { messages.push('Hello'); }
+                };
+            });
+            var moda = Modules.get('A');
+            equal( moda.moduleIdentifier, 'A', "Identifier for A doesn't exists");
+
+            define('B', ['A'], function(A) {
+                return {
+                    hello: function() { A.hello(); messages.push('Hello'); }
+                };
+            });
+            var modb = Modules.get('B');
+            equal( modb.moduleIdentifier, 'B', "Identifier for B doesn't exists");
+
+            require(['A'], function(A) {
+                A.hello();
+                equal( messages.length, 1, "1 messages should have been pushed during require ..." );
+                messages = [];
+            });
+            require(['A', 'B'], function(A, B) {
+                B.hello();
+                equal( messages.length, 2, "2 messages should have been pushed during require ..." );
+                messages = [];
+            });
         });
     });
 </script>
