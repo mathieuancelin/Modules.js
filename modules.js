@@ -537,7 +537,7 @@ var Modules = Modules || {};
         return registeredModules.remove(moduleIdentifier);
     };
 
-    // AMD define
+    // AMD like define
     exports.AMDDefine = function(moduleId, dependencies, definition) {
         if (arguments.length == 3) {
             exports.defineWithDependencies(moduleId, dependencies, definition);
@@ -548,7 +548,7 @@ var Modules = Modules || {};
         }
     };
 
-    // AMD require
+    // AMD like require
     exports.AMDRequire = function(dependencies, callback) {
         return exports.uses(dependencies, callback);
     };
@@ -579,7 +579,7 @@ var Modules = Modules || {};
 
 })(Modules);
 
-// AMD basic API compatibility
+// AMD like API
 function define(moduleId, dependencies, definition) {
     if (arguments.length == 3) {
         Modules.AMDDefine(moduleId, dependencies, definition);
