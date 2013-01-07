@@ -121,12 +121,12 @@ Modules.sendToModulesMatching(/Module[A-Z]:[0-9*]\.[0-9*]/i, 'Hello versioned Mo
 Modules.sendToModulesMatching(/Module[A-z]:1\.[0-9*]/i, 'Hello Modules in v 1.x ...');
 Modules.sendToModulesMatching(/Module[A-Z]:2\.[0-9*]/i, 'Hello Modules in v 2.x ...');
 
-Modules.use('jquery', function(jq) {
-    $('#messages').html('Hello');
+Modules.use('jquery', function(jqy) {
+    jqy('#messages').html('Hello');
 });
 
-Modules.use('underscore', function(undsc) {
-    undsc.each(['1','2'], function(item) {
+Modules.use('underscore', function(udsc) {
+    udsc.each(['1','2'], function(item) {
         console.log(item);
     });
 });
@@ -146,6 +146,7 @@ define('B', ['A'], function(A) {
 require(['A'], function(A) {
     A.hello();
 });
+
 require(['A', 'B'], function(A, B) {
     B.hello();
 });
