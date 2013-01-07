@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Index</title>
+    <script src="javascripts/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="javascripts/underscore.js" type="text/javascript" charset="utf-8"></script>
+    <script src="lib/modules.js" type="text/javascript" charset="utf-8"></script>
+    <style type="text/css">
+        body {
+            font-family: "Courier New";
+            font-size: small;
+            background: #272822;
+            color: #F8F8F2;
+        }
+        #messages {
+            margin-top: 20px;
+            margin-left: 50px;
+        }
+        .separator {
+            color: #F92672;
+            margin-bottom: -15px;
+        }
+        .separator2 {
+            color: #E6DB74;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="messages"><b>$ ./run-module-tests.sh</b><br/><br/></div>
+
+    <script type="text/javascript">
+
+        Modules.create('ModuleA', function(ModuleA) {
+            ModuleA.hello = function() {
+                console.log("Hello from module A");
+            };
+            ModuleA.setupModule = function() {
+                console.log("Setup ModuleA");
+            };
+            ModuleA.messageReceived = function(msg) {
+                console.log("Received in ModuleA %s", msg);
+            };
+        });
+
+        Modules.create('ModuleA:1.0', function(ModuleA) {
+            ModuleA.hello = function() {
+                console.log("Hello from module A v 1.0");
+            };
+            ModuleA.setupModule = function() {
+                console.log("Setup ModuleA v 1.0");
+            };
+            ModuleA.messageReceived = function(msg) {
+                console.log("Received in ModuleA v 1.0 %s", msg);
+            };
+        });
+
+        Modules.create('ModuleA:2.0', function(ModuleA) {
+            ModuleA.hello = function() {
+                console.log("Hello from module A v 2.0");
+            };
+            ModuleA.setupModule = function() {
+                console.log("Setup ModuleA v 2.0");
+            };
+            ModuleA.messageReceived = function(msg) {
+                console.log("Received in ModuleA v 2.0 %s", msg);
+            };
+        });
+
+        Modules.create('ModuleB', function(ModuleB) {
+            ModuleB.hello = function() {
+                console.log("Hello from module B");
+            };
+            ModuleB.moduleReady = function() {
+                console.log("ModuleB is ready !!!");
+            };
+            ModuleB.messageReceived = function(msg) {
+                console.log("Received in ModuleB %s", msg);
+            };
+        });
+
+        Modules.createWithDependencies('ModuleC', ['ModuleA', 'ModuleB'], function(ModuleC, ModuleA, ModuleB) {
+            ModuleC.hello = function() {
+                ModuleA.hello();
+                ModuleB.hello();
+                console.log("Hello from module C");
+            };
+            ModuleC.messageReceived = function(msg) {
+                console.log("Received in ModuleC %s", msg);
+            };
+        });
+
+        Modules.createWithDependencies('ModuleD', ['ModuleC', 'get'], function(ModuleD, ModuleC, get) {
+            ModuleD.hello = function() {
+                ModuleC.hello();
+                console.log("Hello from module D");
+            };
+            ModuleD.messageReceived = function(msg) {
+                console.log("Received in ModuleD %s", msg);
+                get('ModuleA').hello();
+            };
+        });
+
+        $(document).ready(function() {
+
+            var logFunction = console.log;
+            console.log = function(msg, arg) {
+                if(msg.indexOf('#') > -1) {
+                    msg = ('<div class="separator">' + msg + '</div>');
+                }
+                if(msg.indexOf('===') > -1) {
+                    msg = ('<div class="separator2">' + msg + '</div>');
+                }
+                $('#messages').append(msg.replace('%s', arg).split('\n').join('<br/>') + '<br/>');
+            };
+
+            Modules.initModules();
+            Modules.printModules();
+            Modules.use('ModuleD', function(ModuleD) {
+                console.log('#####################################');
+                ModuleD.hello();
+                console.log('#####################################');
+            });
+            Modules.uses(['ModuleA', 'ModuleB', 'ModuleC', 'ModuleD'], function(ModuleA, ModuleB, ModuleC, ModuleD) {
+                ModuleA.hello();
+                console.log('#####################################');
+                ModuleB.hello();
+                console.log('#####################################');
+                ModuleC.hello();
+                console.log('#####################################');
+                ModuleD.hello();
+                console.log('#####################################');
+            });
+            Modules.broadcast("Hello Modules ...");
+            console.log('#####################################');
+            Modules.sendToModule('ModuleA', 'Hello ModuleA ...');
+            console.log('#####################################');
+            Modules.sendToModules(['ModuleA', 'ModuleB'], 'Hello ModuleA and ModuleB ...');
+            console.log('#####################################');
+            Modules.sendToModulesMatching(/Module[A-B]/i, 'Hello Module matching AB...');
+            Modules.sendToModulesMatching(/Module[C-D]/i, 'Hello Module matching CD...');
+            console.log('#####################################');
+            Modules.sendToModulesMatching(/Module[A-Z]:[0-9*]\.[0-9*]/i, 'Hello versioned Modules ...');
+            Modules.sendToModulesMatching(/Module[A-z]:1\.[0-9*]/i, 'Hello Modules in v 1.x ...');
+            Modules.sendToModulesMatching(/Module[A-Z]:2\.[0-9*]/i, 'Hello Modules in v 2.x ...');
+            Modules.use('jquery', function(jq) {
+                console.log('#####################################');
+                jq('#messages').append('jQuery is available as a module !!!<br/>');
+            });
+            Modules.use('underscore', function(jq) {
+                console.log('#####################################');
+                $('#messages').append('Underscore.js is available as a module !!!<br/>');
+            });
+            console.log('<br/><div class="separator2">... Done !</div><br/><b>$ </b>');
+            console.log = logFunction;
+
+        });
+    </script>
+</body>
+</html>
